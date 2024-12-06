@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-time Heart Rate Graph</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <script>
+        const socket = io();
+
+        function resetData() {
+            const age = document.getElementById("age").value;
+            const species = document.getElementById("species").value;
+            const weight = document.getElementById("weight").value;
+            const disease = document.getElementById("disease").value;
+
+            const label = { age, species, weight, disease };
+            socket.emit("reset_data", label);
+        }
+
+        function saveData() {
+            socket.emit("save_data", {});
+        }
+
+        function requestPPGData() {
+            socket.emit("ppg_data_request");
+        }
+
+        socket.on("ppg_data", (data) => {
+            console.log("Received PPG Data:", data);
+            document.getElementById("heartRate").innerText = `Heart Rate: ${data.heartRate} bpm`;
+            document.getElementById("spo2").innerText = `SpO2: ${data.spo2} %`;
+        });
+
+        socket.on("reset_server", (data) => {
+            document.getElementById("age").value = data.age;
+            document.getElementById("species").value = data.species;
+            document.getElementById("weight").value = data.weight;
+            document.getElementById("disease").value = data.disease;
+        });
+
+        socket.on("save_server", () => {
+            document.getElementById("age").value = "";
+            document.getElementById("species").value = "";
+            document.getElementById("weight").value = "";
+            document.getElementById("disease").value = "";
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Real-time Heart Rate Graph</h1>
+        </header>
+        <main>
+            <div class="info fade-in">
+                <h2 id="heartRate">Heart Rate: -- bpm</h2>
+                <h2 id="spo2">SpO2: -- %</h2>
+            </div>
+            <div class="chart-container fade-in">
+                <!-- 그래프가 여기에 렌더링 -->
+                <p>Graph rendering here...</p>
+            </div>
+            <div class="form fade-in">
+                <input type="text" id="age" placeholder="Age">
+                <input type="text" id="species" placeholder="Species">
+                <input type="text" id="weight" placeholder="Weight">
+                <input type="text" id="disease" placeholder="Disease">
+            </div>
+            <div class="actions fade-in">
+                <button onclick="resetData()">Submit</button>
+                <button onclick="saveData()">Save</button>
+                <button onclick="requestPPGData()">Request PPG Data</button>
+            </div>
+        </main>
+        <footer>
+            <p>© 2024 Real-time Heart Rate Monitor</p>
+        </footer>
+    </div>
+</body>
+</html>
