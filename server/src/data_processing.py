@@ -23,6 +23,7 @@ def process_ppg_data(ir_data_list, red_data_list, additional_data_list, socketio
             'spo2': spo2
         }
         socketio.emit('ppg_data', response)
+        print(f"Emitted PPG data")
 
         for i, (ir_value, red_value) in enumerate(zip(ir_data_list, red_data_list)):
             if i == len(ir_data_list) - 1:
