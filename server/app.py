@@ -19,7 +19,7 @@ red_data_list = []
 additional_data_list = []
 csv_file_label = 'default'
 
-@app.route('/esp32Test', methods=['POST'])
+@app.route('/ppgdata', methods=['POST'])
 def receive_data():
     try:
         data = request.get_json(silent=True)
