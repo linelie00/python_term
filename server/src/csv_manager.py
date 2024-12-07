@@ -1,5 +1,5 @@
-import csv
 import os
+import csv
 from datetime import datetime
 
 csv_file = None
@@ -19,11 +19,8 @@ def open_csv_file(label):
     if os.path.getsize(filename) == 0:
         csv_writer.writerow(['IR Value', 'Red Value', 'Heart Rate', 'SpO2'])
 
-    print(f"Opened CSV file: {filename}")
-
 def close_csv_file():
     global csv_file
     if csv_file:
         csv_file.close()
         csv_file = None
-        print("Closed CSV file")

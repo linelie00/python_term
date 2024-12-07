@@ -1,20 +1,19 @@
 import numpy as np
-import biosppy.signals.ppg as ppg
-from .filters import highpass_filter, bandpass_filter, calculate_rms
+from biosppy.signals import ppg
+from src.filters import calculate_spo2
 
 def process_ppg_data(ir_data_list, red_data_list, additional_data_list, socketio):
     try:
-        print(f"Processing {len(ir_data_list)} IR data points")
         signal = np.array(ir_data_list, dtype=np.float64)
         out = ppg.ppg(signal=signal, sampling_rate=50., show=False)
 
+        heart_rate = None
         if len(out['peaks']) >= 2:
             diff = (out['peaks'][1] - out['peaks'][0]) / 50.0
             heart_rate = int(60.0 / diff)
-        else:
-            heart_rate = None
 
-        spo2 = calculate_spo2(ir_data_list, red_data_list)
+        spo2 = int(calculate_spo2(np.array(ir_data_list), np.array(red_data_list)))
+
         response = {
             'ts': out['ts'].tolist(),
             'filtered': out['filtered'].tolist(),
@@ -23,13 +22,9 @@ def process_ppg_data(ir_data_list, red_data_list, additional_data_list, socketio
             'spo2': spo2
         }
         socketio.emit('ppg_data', response)
-        print(f"Emitted PPG data")
 
-        for i, (ir_value, red_value) in enumerate(zip(ir_data_list, red_data_list)):
-            if i == len(ir_data_list) - 1:
-                additional_data_list.append((ir_value, red_value, heart_rate, spo2))
-            else:
-                additional_data_list.append((ir_value, red_value, None, None))
+        for ir, red in zip(ir_data_list, red_data_list):
+            additional_data_list.append((ir, red, heart_rate, spo2))
 
         ir_data_list.clear()
         red_data_list.clear()
@@ -37,7 +32,3 @@ def process_ppg_data(ir_data_list, red_data_list, additional_data_list, socketio
         ir_data_list.clear()
         red_data_list.clear()
         print(f"Error processing PPG data: {e}")
-
-def calculate_spo2(ir_data, red_data):
-    # SpO2 계산 로직 (filters.py 활용)
-    pass
